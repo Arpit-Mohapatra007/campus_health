@@ -36,8 +36,10 @@ dependencies:
   firebase_auth: ^5.0.0
   cloud_firestore: ^5.0.0
 
-  # State Management (Simple & effective for Hackathons)
-  provider: ^6.1.2
+  # State Management & Hooks
+  flutter_hooks: ^0.20.0       
+  hooks_riverpod: ^2.5.1       
+  flutter_riverpod: ^2.5.1
 
   # Location & Maps (For SOS & Heatmap)
   geolocator: ^11.0.0
