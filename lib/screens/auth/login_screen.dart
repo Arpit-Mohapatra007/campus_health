@@ -33,8 +33,11 @@ class LoginScreen extends HookConsumerWidget {
       } catch (e) {
         if (context.mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red)
-           );
+            SnackBar(
+              content: Text(e.toString()), // "Incorrect password."
+              backgroundColor: Colors.red
+            )
+          );
         }
       } finally {
         isLoading.value = false;

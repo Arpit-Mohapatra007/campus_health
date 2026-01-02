@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
-
+import '../utils/app_exception.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -41,8 +41,12 @@ Future<void> signUp({
 }
 
   Future<void> signIn(String email, String password) async {
+  try {
     await _auth.signInWithEmailAndPassword(email: email, password: password);
+  } catch (e) {
+    throw AppException.from(e); 
   }
+}
 
   Future<void> signOut() async {
     await _auth.signOut();
