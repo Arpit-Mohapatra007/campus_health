@@ -25,7 +25,7 @@ class StudentHome extends ConsumerWidget {
           const SizedBox(height: 20),
           Center(
             child: ElevatedButton(
-                onPressed: () => context.push('/student/book'), 
+                onPressed: () => context.push('/student/bookAppointment'), 
                 child: const Text("Book Appointment"),
               ),
             ),

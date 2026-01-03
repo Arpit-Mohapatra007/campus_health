@@ -1,5 +1,6 @@
 import 'package:campus_health/providers/doctor_provider.dart'; 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class LiveQueueTab extends ConsumerWidget {
@@ -20,7 +21,7 @@ class LiveQueueTab extends ConsumerWidget {
               children: [
                 Icon(Icons.coffee, size: 50, color: Colors.grey[400]),
                 const SizedBox(height: 10),
-                const Text("Queue is empty. Good job!", style: TextStyle(color: Colors.grey)),
+                const Text("Queue is empty !", style: TextStyle(color: Colors.grey)),
               ],
             ),
           );
@@ -65,6 +66,22 @@ class LiveQueueTab extends ConsumerWidget {
                   isFirst ? "Now Serving..." : "Waiting in line", 
                   style: TextStyle(color: isFirst ? Colors.teal[700] : Colors.grey)
                 ),
+                onTap: isFirst ? () async {
+                      await ref.read(doctorServiceProvider).callPatient(doc.id);
+                      if (context.mounted) {
+                        context.push(
+                          '/doctor/consultation',
+                          extra: {
+                            'appointmentId': doc.id,
+                            'appointmentData': data,
+                          },
+                        );
+                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Calling Patient..."), duration: Duration(milliseconds: 500))
+                        );
+                      }
+                    } : null,
                 trailing: isFirst ? null : ElevatedButton.icon(
                   onPressed: () {
                     ref.read(doctorServiceProvider).callPatient(doc.id);

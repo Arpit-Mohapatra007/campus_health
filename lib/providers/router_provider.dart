@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../screens/auth/login_screen.dart' show LoginScreen;
+import '../screens/doctor/consultation_screen.dart' show ConsultationScreen;
 import '../screens/doctor/doctor_home.dart' show DoctorHome;
 import '../screens/driver/driver_home.dart' show DriverHome;
 import '../screens/student/book_appointment_screen.dart' show BookAppointmentScreen;
@@ -28,10 +29,28 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/student',
         builder: (context, state) => const StudentHome(),
+        routes: [
+              GoRoute(
+            path: 'bookAppointment', 
+            builder: (context, state) => const BookAppointmentScreen()
+          ),
+        ]
       ),
       GoRoute(
         path: '/doctor',
         builder: (context, state) => const DoctorHome(),
+        routes: [
+          GoRoute(
+            path: 'consultation', 
+            builder: (context, state) {
+              final map = state.extra as Map<String, dynamic>;
+              return ConsultationScreen(
+                appointmentId: map['appointmentId'],
+                appointmentData: map['appointmentData'],
+              );
+            },
+          ),
+        ]
       ),
       GoRoute(
         path: '/driver',
@@ -40,10 +59,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      ),
-      GoRoute(
-        path: '/student/book', 
-        builder: (context, state) => const BookAppointmentScreen()
       ),
     ],
 
