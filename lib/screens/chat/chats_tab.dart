@@ -42,8 +42,8 @@ class ChatsTab extends ConsumerWidget {
             final otherName = isMeDoctor ? chat.studentName : chat.doctorName;
             
             String timeStr = "";
-            timeStr = DateFormat('h:mm a').format(chat.lastMessageTime.toDate());
-                    
+             timeStr = DateFormat('h:mm a').format(chat.lastMessageTime.toDate());
+                              
             return Card(
               elevation: 2,
               margin: const EdgeInsets.symmetric(vertical: 6),
@@ -94,7 +94,20 @@ class ChatsTab extends ConsumerWidget {
                         );
                         
                         if (confirm == true) {
-                          await ref.read(chatServiceProvider).deleteChat(chat.id);
+                          try {
+                            await ref.read(chatServiceProvider).deleteChat(chat.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Chat deleted"))
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Delete Failed: $e"), backgroundColor: Colors.red)
+                              );
+                            }
+                          }
                         }
                       },
                     )
