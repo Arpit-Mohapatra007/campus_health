@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../providers/pharmacy_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/user_provider.dart';
 import 'package:go_router/go_router.dart';
 
 class ConsultationScreen extends HookConsumerWidget {
@@ -25,6 +26,7 @@ class ConsultationScreen extends HookConsumerWidget {
     
     final inventoryAsync = ref.watch(inventoryProvider);
     final currentUser = ref.watch(authServiceProvider).currentUser;
+    final doctorProfile = ref.watch(currentUserProfileProvider).value;
 
     void addMedicine(List<Map<String, dynamic>> inventory) {
       if (selectedMedId.value == null) return;
@@ -54,12 +56,18 @@ class ConsultationScreen extends HookConsumerWidget {
         return;
       }
 
+      if (currentUser == null || doctorProfile == null) {
+         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Doctor profile not loaded")));
+         return;
+      }
+
       try {
         await ref.read(pharmacyServiceProvider).submitPrescription(
           appointmentId: appointmentId,
           studentId: appointmentData['studentId'],
           studentName: appointmentData['studentName'],
-          doctorId: currentUser!.uid,
+          doctorId: currentUser.uid,
+          doctorName: doctorProfile.name,
           diagnosis: diagnosisController.text,
           medicines: selectedMeds.value,
           hostel: appointmentData['hostel'] ?? 'Unknown',

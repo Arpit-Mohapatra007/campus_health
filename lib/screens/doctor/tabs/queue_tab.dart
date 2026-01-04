@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:campus_health/providers/doctor_provider.dart'; 
 import '../../../providers/auth_provider.dart' show authServiceProvider;
 import '../../../providers/chat_provider.dart' show chatServiceProvider;
+import '../../../providers/user_provider.dart'; 
 
 class LiveQueueTab extends ConsumerWidget {
   const LiveQueueTab({super.key});
@@ -11,6 +12,7 @@ class LiveQueueTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queueAsync = ref.watch(approvedQueueProvider);
+    final doctorProfile = ref.watch(currentUserProfileProvider).value;
 
     return queueAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -23,7 +25,7 @@ class LiveQueueTab extends ConsumerWidget {
               children: [
                 Icon(Icons.coffee, size: 50, color: Colors.grey[400]),
                 const SizedBox(height: 10),
-                const Text("Queue is empty. Good job!", style: TextStyle(color: Colors.grey)),
+                const Text("Queue is empty !", style: TextStyle(color: Colors.grey)),
               ],
             ),
           );
@@ -75,13 +77,13 @@ class LiveQueueTab extends ConsumerWidget {
                       icon: const Icon(Icons.message, color: Colors.blue),
                       onPressed: () async {
                         final doctor = ref.read(authServiceProvider).currentUser;
-                        if (doctor == null) return;
+                        if (doctor == null || doctorProfile == null) return;
 
                         final chatId = await ref.read(chatServiceProvider).getChatRoomId(
                           studentId: data['studentId'],
                           studentName: data['studentName'],
                           doctorId: doctor.uid,
-                          doctorName: "Dr. ${doctor.displayName ?? 'Staff'}",
+                          doctorName: doctorProfile.name,
                         );
 
                         if (context.mounted) {

@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import 'tabs/pending_tab.dart';
 import 'tabs/queue_tab.dart';
-import 'tabs/chats_tab.dart';
+import '../chat/chats_tab.dart';
 
 class DoctorHome extends ConsumerWidget {
   const DoctorHome({super.key});

@@ -6,7 +6,7 @@ import '../screens/auth/login_screen.dart' show LoginScreen;
 import '../screens/chat/chat_screen.dart' show ChatScreen;
 import '../screens/doctor/consultation_screen.dart' show ConsultationScreen;
 import '../screens/doctor/doctor_home.dart' show DoctorHome;
-import '../screens/doctor/tabs/chats_tab.dart' show ChatsTab;
+import '../screens/chat/chats_tab.dart' show ChatsTab;
 import '../screens/driver/driver_home.dart' show DriverHome;
 import '../screens/student/book_appointment_screen.dart' show BookAppointmentScreen;
 import '../screens/student/medical_history_screen.dart' show MedicalHistoryScreen;

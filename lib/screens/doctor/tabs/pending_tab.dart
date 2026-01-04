@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../providers/doctor_provider.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/user_provider.dart';
 
 class PendingRequestsTab extends ConsumerWidget {
   const PendingRequestsTab({super.key});
@@ -11,6 +12,8 @@ class PendingRequestsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingAsync = ref.watch(pendingAppointmentsProvider);
+    
+    final doctorProfile = ref.watch(currentUserProfileProvider).value;
     
     return pendingAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -61,13 +64,13 @@ class PendingRequestsTab extends ConsumerWidget {
                         icon: const Icon(Icons.message, color: Colors.blue),
                         onPressed: () async {
                           final doctor = ref.read(authServiceProvider).currentUser;
-                          if (doctor == null) return;
+                          if (doctor == null || doctorProfile == null) return;
 
                           final chatId = await ref.read(chatServiceProvider).getChatRoomId(
                             studentId: data['studentId'],
                             studentName: data['studentName'],
                             doctorId: doctor.uid,
-                            doctorName: "Dr. ${doctor.displayName ?? 'Staff'}",
+                            doctorName: doctorProfile.name,
                           );
 
                           if (context.mounted) {
