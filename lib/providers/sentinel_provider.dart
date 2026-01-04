@@ -3,6 +3,6 @@ import '../services/sentinel_service.dart';
 
 final sentinelServiceProvider = Provider<SentinelService>((ref) => SentinelService());
 
-final outbreakAlertsProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
-  return ref.watch(sentinelServiceProvider).getOutbreakAlerts();
+final outbreakMessagesProvider = StreamProvider<List<String>>((ref) {
+  return ref.watch(sentinelServiceProvider).getOutbreakMessages();
 });

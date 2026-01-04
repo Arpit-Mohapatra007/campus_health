@@ -3,11 +3,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/user_model.dart';
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localParams = FlutterLocalNotificationsPlugin();
-
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  
   Future<void> init() async {
     await _fcm.requestPermission(
       alert: true,
@@ -39,19 +41,12 @@ class NotificationService {
       AndroidNotification? android = message.notification?.android;
 
       if (notification != null && android != null) {
-        _localParams.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                icon: '@mipmap/ic_launcher',
-                importance: Importance.max,
-                priority: Priority.high,
-              ),
-            ));
+        _showLocalNotification(
+          id: notification.hashCode,
+          title: notification.title ?? 'Alert',
+          body: notification.body ?? '',
+          payload: 'fcm',
+        );
       }
     });
   }
@@ -68,5 +63,111 @@ class NotificationService {
     } catch (e) {
       throw AppException('Failed to upload FCM token: $e');
     }
+  }
+
+  void listenForLocalAlerts(UserModel user) {
+    if (user.role == 'driver') {
+      _listenToSOS();
+    } else if (user.role == 'student') {
+      _listenToAppointments(user.uid);
+      _listenToBroadcasts(user);
+    }
+  }
+
+  void _listenToSOS() {
+    _db.collection('emergencies')
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data() as Map<String, dynamic>;
+          _showLocalNotification(
+            id: change.doc.hashCode,
+            title: "SOS ALERT!",
+            body: "${data['studentName']} at ${data['roomNumber']} needs help!",
+            payload: "sos",
+          );
+        }
+      }
+    });
+  }
+
+  void _listenToAppointments(String studentId) {
+    _db.collection('appointments')
+        .where('studentId', isEqualTo: studentId)
+        .snapshots()
+        .listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.modified) {
+          final data = change.doc.data() as Map<String, dynamic>;
+          if (data['status'] == 'approved') {
+            _showLocalNotification(
+              id: change.doc.hashCode,
+              title: "Appointment Approved",
+              body: "${data['doctorName']} is ready to see you.",
+              payload: "appointment",
+            );
+          }
+        }
+      }
+    });
+  }
+
+  void _listenToBroadcasts(UserModel user) {
+    String? myWing;
+    String? myFloor;
+    final roomRegex = RegExp(r"^([A-Z0-9]+)([1-4])(\d{2})$");
+    final match = roomRegex.firstMatch(user.roomNumber);
+    if (match != null) {
+      myWing = match.group(1);
+      myFloor = match.group(2);
+    }
+
+    _db.collection('broadcasts')
+        .where('targetHostel', isEqualTo: user.hostel)
+        .limit(1)
+        .snapshots()
+        .listen((snapshot) {
+       for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+           final data = change.doc.data() as Map<String, dynamic>;
+
+           String? targetWing = data['targetWing'];
+           String? targetFloor = data['targetFloor'];
+
+           bool wingMatch = (targetWing == null || targetWing.isEmpty || targetWing == 'All' || targetWing == myWing);
+           bool floorMatch = (targetFloor == null || targetFloor.isEmpty || targetFloor == 'All' || targetFloor == myFloor);
+
+           if (wingMatch && floorMatch) {
+             _showLocalNotification(
+               id: change.doc.hashCode,
+               title: "HOSTEL ALERT",
+               body: data['message'] ?? "Important notice for your hostel.",
+               payload: "broadcast",
+             );
+           }
+        }
+       }
+    });
+  }
+
+  Future<void> _showLocalNotification({
+    required int id, 
+    required String title, 
+    required String body, 
+    required String payload
+  }) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'high_importance_channel', 
+      'High Importance Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      styleInformation: BigTextStyleInformation(''),
+    );
+    const NotificationDetails details = NotificationDetails(android: androidDetails);
+    
+    await _localParams.show(id, title, body, details, payload: payload);
   }
 }
