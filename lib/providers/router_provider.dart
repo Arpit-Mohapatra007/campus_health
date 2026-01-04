@@ -6,8 +6,10 @@ import '../screens/auth/login_screen.dart' show LoginScreen;
 import '../screens/chat/chat_screen.dart' show ChatScreen;
 import '../screens/doctor/consultation_screen.dart' show ConsultationScreen;
 import '../screens/doctor/doctor_home.dart' show DoctorHome;
+import '../screens/doctor/tabs/chats_tab.dart' show ChatsTab;
 import '../screens/driver/driver_home.dart' show DriverHome;
 import '../screens/student/book_appointment_screen.dart' show BookAppointmentScreen;
+import '../screens/student/medical_history_screen.dart' show MedicalHistoryScreen;
 import '../screens/student/student_home.dart' show StudentHome;
 import 'auth_provider.dart';
 import 'user_provider.dart';
@@ -35,6 +37,27 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
             path: 'bookAppointment', 
             builder: (context, state) => const BookAppointmentScreen()
+          ),
+          GoRoute(
+            path: 'chats', 
+            builder: (context, state) => Scaffold(
+              appBar: AppBar(title: const Text("My Chats"), backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              body: const ChatsTab(),
+            ),
+          ),
+          GoRoute(
+            path: 'chat',
+            builder: (context, state) {
+              final map = state.extra as Map<String, dynamic>;
+              return ChatScreen(
+                chatId: map['chatId'],
+                otherUserName: map['otherUserName'],
+              );
+            },
+          ),
+          GoRoute(
+            path: 'history',
+            builder: (context, state) => const MedicalHistoryScreen(),
           ),
         ]
       ),
