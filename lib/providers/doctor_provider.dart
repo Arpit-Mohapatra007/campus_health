@@ -15,3 +15,7 @@ final approvedQueueProvider = StreamProvider<QuerySnapshot>((ref) {
   final service = ref.watch(doctorServiceProvider);
   return service.getApprovedQueue();
 });
+
+final allDoctorsProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(doctorServiceProvider).getAllDoctors();
+});

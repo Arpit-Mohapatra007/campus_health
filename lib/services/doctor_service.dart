@@ -56,4 +56,14 @@ class DoctorService {
   Future<void> rejectStudent(String docId) async {
     await _db.collection('appointments').doc(docId).update({'status': 'rejected'});
   }
+
+  Stream<List<Map<String, dynamic>>> getAllDoctors() {
+    return _db.collection('users')
+        .where('role', isEqualTo: 'doctor')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => {
+              ...doc.data(),
+              'id': doc.id,
+            }).toList());
+  }
 }

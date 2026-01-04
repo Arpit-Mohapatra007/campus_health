@@ -7,6 +7,7 @@ import '../../providers/user_provider.dart';
 import '../../providers/sos_provider.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/live_queue_card.dart';
+import 'all_doctors_screen.dart' show AllDoctorsScreen;
 import 'nearby_hospitals_screen.dart';
 import 'authorities_contact_screen.dart';
 
@@ -82,6 +83,11 @@ class StudentHome extends HookConsumerWidget {
                   leading: const Icon(Icons.phone_in_talk, color: Colors.orange),
                   title: const Text("Emergency Contacts"),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AuthoritiesContactScreen())),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.search, color: Colors.purple),
+                  title: const Text("Find a Doctor"),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AllDoctorsScreen())),
                 ),
                 ListTile(
                   leading: const Icon(Icons.chat, color: Colors.blue),
