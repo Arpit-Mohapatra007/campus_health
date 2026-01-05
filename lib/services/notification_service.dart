@@ -75,7 +75,6 @@ class NotificationService {
       subs.add(_listenToAppointments(user.uid));
       subs.add(_listenToBroadcasts(user));
     }
-    
     return subs;
   }
 

@@ -10,6 +10,7 @@ class AppointmentService {
     required String reason,
     required String hostel,
     required DateTime date,
+    required String category,
   }) async {
     final existing = await _firestore
         .collection('appointments')
@@ -26,6 +27,7 @@ class AppointmentService {
       'studentName': studentName,
       'reason': reason,
       'hostel': hostel,
+      'category': category,
       'date': Timestamp.fromDate(date),
       'status': 'pending',
       'timestamp': FieldValue.serverTimestamp(),

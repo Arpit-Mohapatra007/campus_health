@@ -3,9 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DoctorService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<QuerySnapshot> getPendingAppointments() {
+  Stream<QuerySnapshot> getPendingAppointments(String specialization) {
     return _db.collection('appointments')
         .where('status', isEqualTo: 'pending')
+        .where('category', isEqualTo: specialization)
         .orderBy('date')
         .snapshots();
   }

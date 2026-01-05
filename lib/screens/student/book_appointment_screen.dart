@@ -15,7 +15,11 @@ class BookAppointmentScreen extends ConsumerWidget {
     final scheduleAsync = ref.watch(specialistScheduleProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Book Appointment"), backgroundColor: Colors.teal, foregroundColor: Colors.white),
+      appBar: AppBar(
+        title: const Text("Book Appointment"), 
+        backgroundColor: Colors.teal, 
+        foregroundColor: Colors.white
+      ),
       body: scheduleAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
@@ -38,6 +42,7 @@ class _CalendarBody extends StatefulHookConsumerWidget {
 class _CalendarBodyState extends ConsumerState<_CalendarBody> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  String _selectedCategory = "General Physician";
 
   List<String> _getEventsForDay(DateTime day) {
     final cleanDay = DateTime(day.year, day.month, day.day);
@@ -57,6 +62,12 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
     final isLoading = useState(false);
     final user = ref.watch(currentUserProfileProvider).value;
     final now = DateTime.now();
+
+    List<String> specialists = [];
+    if (_selectedDay != null) {
+      specialists = _getEventsForDay(_selectedDay!);
+    }
+
     Future<void> handleBooking() async {
       if (_selectedDay == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a date")));
@@ -76,6 +87,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
           hostel: user.hostel,
           reason: reasonController.text.trim(),
           date: _selectedDay!,
+          category: _selectedCategory,
         );
         
         if (context.mounted) {
@@ -103,6 +115,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
               setState(() {
                 _selectedDay = selectedDay;
                 _focusedDay = focusedDay;
+                _selectedCategory = "General Physician";
               });
             },
             eventLoader: _getEventsForDay,
@@ -121,33 +134,97 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
                  decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(20)),
                  child: Text("Selected: ${_selectedDay.toString().split(' ')[0]}", style: const TextStyle(fontWeight: FontWeight.bold)),
                ),
-               const SizedBox(height: 10),
-               
-               if (_getEventsForDay(_selectedDay!).isNotEmpty)
+               const SizedBox(height: 15),
+               if (specialists.isNotEmpty) ...[
+                 Container(
+                   padding: const EdgeInsets.all(16),
+                   margin: const EdgeInsets.symmetric(horizontal: 20),
+                   decoration: BoxDecoration(
+                     color: Colors.white,
+                     borderRadius: BorderRadius.circular(16),
+                     border: Border.all(color: Colors.grey.shade300),
+                     boxShadow: [
+                       BoxShadow(color: Colors.black, blurRadius: 10, offset: const Offset(0, 4))
+                     ]
+                   ),
+                   child: Column(
+                     children: [
+                       const Text("Who do you want to consult?", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                       const SizedBox(height: 15),
+                       SizedBox(
+                         width: double.infinity,
+                         height: 50,
+                         child: ElevatedButton.icon(
+                           onPressed: () => setState(() => _selectedCategory = "General Physician"),
+                           icon: Icon(Icons.medical_services_outlined, 
+                             color: _selectedCategory == "General Physician" ? Colors.white : Colors.teal
+                           ),
+                           label: const Text("General Physician (OPD)"),
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: _selectedCategory == "General Physician" ? Colors.teal : Colors.grey[100],
+                             foregroundColor: _selectedCategory == "General Physician" ? Colors.white : Colors.black87,
+                             elevation: _selectedCategory == "General Physician" ? 4 : 0,
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(12),
+                               side: _selectedCategory == "General Physician" 
+                                  ? BorderSide.none 
+                                  : const BorderSide(color: Colors.teal, width: 1.5)
+                             )
+                           ),
+                         ),
+                       ),
+                       
+                       const SizedBox(height: 10),
+                       const Text("OR", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
+                       const SizedBox(height: 10),
+                       ...specialists.map((spec) => SizedBox(
+                         width: double.infinity,
+                         height: 50,
+                         child: ElevatedButton.icon(
+                           onPressed: () => setState(() => _selectedCategory = spec),
+                           icon: Icon(Icons.star_outline, 
+                             color: _selectedCategory == spec ? Colors.white : Colors.pink
+                           ),
+                           label: Text("$spec (Specialist)"),
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: _selectedCategory == spec ? Colors.pink : Colors.grey[100],
+                             foregroundColor: _selectedCategory == spec ? Colors.white : Colors.black87,
+                             elevation: _selectedCategory == spec ? 4 : 0,
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(12),
+                               side: _selectedCategory == spec
+                                  ? BorderSide.none 
+                                  : const BorderSide(color: Colors.pink, width: 1.5)
+                             )
+                           ),
+                         ),
+                       )),
+                     ],
+                   ),
+                 )
+               ] else ...[
                  Container(
                    padding: const EdgeInsets.all(12),
                    margin: const EdgeInsets.symmetric(horizontal: 20),
                    decoration: BoxDecoration(
-                     color: Colors.pink[50], 
+                     color: Colors.teal[50], 
                      borderRadius: BorderRadius.circular(10), 
-                     border: Border.all(color: Colors.pink)
+                     border: Border.all(color: Colors.teal)
                    ),
-                   child: Row(
+                   child: const Row(
+                     mainAxisAlignment: MainAxisAlignment.center,
                      children: [
-                       const Icon(Icons.star, color: Colors.pink),
-                       const SizedBox(width: 10),
-                       Text("Visiting: ${_getEventsForDay(_selectedDay!).join(', ')}", style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.bold)),
+                       Icon(Icons.check_circle, color: Colors.teal),
+                       SizedBox(width: 10),
+                       Text("Regular OPD Available", style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
                      ],
                    ),
                  )
-               else
-                 const Padding(
-                   padding: EdgeInsets.all(8.0),
-                   child: Text("Regular OPD Available", style: TextStyle(color: Colors.grey)),
-                 ),
+               ],
           ],
       
           const SizedBox(height: 20),
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TextField(
@@ -171,10 +248,11 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
               onPressed: handleBooking,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white
+                backgroundColor: _selectedCategory == "General Physician" ? Colors.teal : Colors.pink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
               ),
-              child: const Text("Confirm Appointment"),
+              child: Text("Confirm Appointment ($_selectedCategory)"),
             ),
           const SizedBox(height: 30),
         ],
