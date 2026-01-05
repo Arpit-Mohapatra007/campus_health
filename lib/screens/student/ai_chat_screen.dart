@@ -62,7 +62,7 @@ class AIChatScreen extends HookConsumerWidget {
       appBar: AppBar(
         title: const Row(
           children: [
-            Icon(Icons.smart_toy, color: Colors.white),
+            Icon(Icons.auto_awesome, color: Colors.white),
             SizedBox(width: 8),
             Text("Dr. AI Assistant"),
           ],

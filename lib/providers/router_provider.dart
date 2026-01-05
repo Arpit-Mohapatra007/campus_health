@@ -10,6 +10,7 @@ import '../screens/chat/chats_tab.dart' show ChatsTab;
 import '../screens/driver/driver_home.dart' show DriverHome;
 import '../screens/student/book_appointment_screen.dart' show BookAppointmentScreen;
 import '../screens/student/medical_history_screen.dart' show MedicalHistoryScreen;
+import '../screens/student/nearby_hospitals_screen.dart' show NearbyHospitalsScreen;
 import '../screens/student/student_home.dart' show StudentHome;
 import '../screens/student/ai_chat_screen.dart' show AIChatScreen;
 import 'auth_provider.dart';
@@ -42,6 +43,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               final preSelected = extra?['category'] as String?;
               return BookAppointmentScreen(initialCategory: preSelected);
             }
+          ),
+          GoRoute(
+            path: 'nearbyHospitals',
+            builder: (context, state) => const NearbyHospitalsScreen(),
           ),
           GoRoute(
             path: 'chats', 

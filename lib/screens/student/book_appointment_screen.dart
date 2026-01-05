@@ -62,6 +62,78 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
   void initState() {
     super.initState();
     _selectedCategory = widget.initialCategory ?? AppConstants.generalPhysician;
+    if (_selectedCategory != AppConstants.generalPhysician) {
+      _autoSelectSpecialistDate();
+    }
+  }
+
+  void _autoSelectSpecialistDate() {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+
+    final upcomingVisits = widget.scheduleList.where((item) {
+      final visitDate = item['date'] as DateTime;
+      final specialistName = item['specialist'] as String;
+
+      return specialistName.toLowerCase() == _selectedCategory.toLowerCase() && 
+             !visitDate.isBefore(todayStart);
+    }).toList();
+
+    upcomingVisits.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
+
+    if (upcomingVisits.isNotEmpty) {
+      final nextVisitDate = upcomingVisits.first['date'] as DateTime;
+      setState(() {
+        _selectedDay = nextVisitDate;
+        _focusedDay = nextVisitDate;
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showUnavailableDialog();
+      });
+    }
+  }
+
+  void _showUnavailableDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 10),
+            Expanded(child: Text("No $_selectedCategory Available")),
+          ],
+        ),
+        content: Text(
+          "Dr. AI suggested a $_selectedCategory, but there are no upcoming campus visits scheduled for this specialist.\n\n"
+          "For urgent symptoms, we recommend visiting a nearby hospital."
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _selectedCategory = AppConstants.generalPhysician;
+                _selectedDay = null;
+                _focusedDay = DateTime.now();
+              });
+            }, 
+            child: const Text("See General Physician")
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.local_hospital),
+            label: const Text("Find Hospital"),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.push('/student/nearbyHospitals');
+            },
+          )
+        ],
+      )
+    );
   }
 
   List<String> _getEventsForDay(DateTime day) {
@@ -77,7 +149,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
     final reasonController = useTextEditingController();
     final isLoading = useState(false);
     final user = ref.watch(currentUserProfileProvider).value;
@@ -130,7 +202,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
         children: [
           TableCalendar(
             firstDay: now,
-            lastDay: DateTime(now.year, now.month + 1, 0),
+            lastDay: DateTime(now.year, now.month + 3, 0),
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
@@ -138,7 +210,10 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
                 _selectedDay = selectedDay;
                 _focusedDay = focusedDay;
                 if (!specialists.contains(_selectedCategory) && _selectedCategory != AppConstants.generalPhysician) {
-                   _selectedCategory = AppConstants.generalPhysician;
+                   final specsOnDay = _getEventsForDay(selectedDay);
+                   if (!specsOnDay.contains(_selectedCategory)) {
+                     _selectedCategory = AppConstants.generalPhysician;
+                   }
                 }
               });
             },
@@ -168,7 +243,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
                      borderRadius: BorderRadius.circular(16),
                      border: Border.all(color: Colors.grey.shade300),
                      boxShadow: [
-                       BoxShadow(color: Colors.black, blurRadius: 10, offset: const Offset(0, 4))
+                       BoxShadow(color: Colors.black12, blurRadius: 10, offset: const Offset(0, 4))
                      ]
                    ),
                    child: Column(
