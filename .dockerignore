@@ -9,4 +9,3 @@ macos/
 linux/
 windows/
 test/
-*.env
